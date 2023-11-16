@@ -1,4 +1,4 @@
-package com.epam.training.ticketservice.Models;
+package com.epam.training.ticketservice.models;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -7,7 +7,7 @@ import javax.persistence.Id;
 
 
 @Entity
-public class User {
+public class Users {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -17,10 +17,10 @@ public class User {
 
     private String password;
 
-    public User() {
+    public Users() {
     }
 
-    public User(String user_name, String password) {
+    public Users(String user_name, String password) {
         this.user_name = user_name;
         this.password = password;
     }

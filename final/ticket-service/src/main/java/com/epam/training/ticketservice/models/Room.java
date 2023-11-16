@@ -1,4 +1,4 @@
-package com.epam.training.ticketservice.Models;
+package com.epam.training.ticketservice.models;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
