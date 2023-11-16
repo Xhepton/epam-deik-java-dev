@@ -13,6 +13,7 @@ public class Commands {
     private final MovieRepository movieRepository;
     private final AdminService adminService;
     private boolean adminLoggedIn = false;
+    private String loggedInUsername;
 
     @Autowired
     public Commands(MovieRepository movieRepository, AdminService adminService) {
@@ -23,9 +24,24 @@ public class Commands {
     public String signInPrivileged(String username, String password) {
         if (adminService.authenticate(username, password)) {
             adminLoggedIn = true;
+            loggedInUsername = username;
             return "Admin login successful. You now have access to privileged commands.";
         } else {
             return "Login failed due to incorrect credentials.";
+        }
+    }
+    @ShellMethod(key = "sign out", value = "Admin logout")
+    public String signOut() {
+        adminLoggedIn = false;
+        return "Admin logout successful. You no longer have access to privileged commands.";
+    }
+
+    @ShellMethod(key = "describe account", value = "Describe the current account")
+    public String describeAccount() {
+        if (adminLoggedIn) {
+            return "Signed in with privileged account '" + loggedInUsername + "'";
+        } else {
+            return "You are not signed in";
         }
     }
 
@@ -43,6 +59,29 @@ public class Commands {
         }
         else {
             return "You are not connected!";
+        }
+    }
+
+    @ShellMethod(key = "update movie", value = "Update movie details")
+    public String updateMovie(String movieTitle, String genre, int duration) {
+        if (adminLoggedIn) {
+            // Retrieve the existing movie from the database
+            Movie existingMovie = movieRepository.findByMovieName(movieTitle);
+
+            if (existingMovie != null) {
+                // Update the properties of the existing movie
+                existingMovie.setType(genre);
+                existingMovie.setLength(duration);
+
+                // Save the updated movie back to the database
+                movieRepository.save(existingMovie);
+
+                return "Movie '" + movieTitle + "' updated successfully.";
+            } else {
+                return "Movie with title '" + movieTitle + "' not found.";
+            }
+        } else {
+            return "You must be logged in as admin to execute this command.";
         }
     }
 }
