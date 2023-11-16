@@ -1,23 +1,30 @@
 package com.epam.training.ticketservice.commands;
 
 import com.epam.training.ticketservice.models.Movie;
+import com.epam.training.ticketservice.models.Room;
 import com.epam.training.ticketservice.repositories.MovieRepository;
+import com.epam.training.ticketservice.repositories.RoomRepository;
 import com.epam.training.ticketservice.services.AdminService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ShellComponent
 public class Commands {
 
     private final MovieRepository movieRepository;
+    private final RoomRepository roomRepository;
     private final AdminService adminService;
     private boolean adminLoggedIn = false;
     private String loggedInUsername;
 
     @Autowired
-    public Commands(MovieRepository movieRepository, AdminService adminService) {
+    public Commands(MovieRepository movieRepository, RoomRepository roomRepository, AdminService adminService) {
         this.movieRepository = movieRepository;
+        this.roomRepository = roomRepository;
         this.adminService = adminService;
     }
     @ShellMethod(key = "sign in privileged", value = "Admin login")
@@ -58,7 +65,7 @@ public class Commands {
             return "Film mentve az adatbázisba: " + movie.getMovie_name();
         }
         else {
-            return "You are not connected!";
+            return "You are not signed in";
         }
     }
 
@@ -81,7 +88,127 @@ public class Commands {
                 return "Movie with title '" + movieTitle + "' not found.";
             }
         } else {
+            return "You are not signed in";
+        }
+    }
+
+    @ShellMethod(key = "delete movie", value = "Delete a movie")
+    public String deleteMovie(String movieTitle) {
+        if (adminLoggedIn) {
+            // Retrieve the existing movie from the database
+            Movie existingMovie = movieRepository.findByMovieName(movieTitle);
+
+            if (existingMovie != null) {
+                // Delete the movie from the database
+                movieRepository.delete(existingMovie);
+
+                return "Movie '" + movieTitle + "' deleted successfully.";
+            } else {
+                return "Movie with title '" + movieTitle + "' not found.";
+            }
+        } else {
+            return "You are not signed in";
+        }
+    }
+
+    @ShellMethod(key = "list movies", value = "List all movies")
+    public String listMovies() {
+        List<Movie> movies = movieRepository.findAll();
+
+        if (movies.isEmpty()) {
+            return "There are no movies at the moment";
+        } else {
+            StringBuilder output = new StringBuilder();
+            for (Movie movie : movies) {
+                output.append(movie.getMovie_name())
+                        .append(" (")
+                        .append(movie.getType())
+                        .append(", ")
+                        .append(movie.getLength())
+                        .append(" minutes)\n");
+            }
+            return output.toString();
+        }
+    }
+
+    @ShellMethod(key = "create room", value = "Create a room")
+    public String createRoom(String roomName, int rows, int columns) {
+        if (adminLoggedIn) {
+            // Check if a room with the same name already exists
+            if (roomRepository.existsByRoomName(roomName)) {
+                return "Room with name '" + roomName + "' already exists.";
+            }
+
+            // Create a new room
+            Room newRoom = new Room();
+            newRoom.setRoom_name(roomName);
+            newRoom.setRows(rows);
+            newRoom.setColumns(columns);
+
+            // Save the new room to the database
+            roomRepository.save(newRoom);
+
+            return "Room '" + roomName + "' created successfully.";
+        } else {
             return "You must be logged in as admin to execute this command.";
         }
     }
+    @ShellMethod(key = "update room", value = "Update a room")
+    public String updateRoom(String roomName, int rows, int columns) {
+        if (adminLoggedIn) {
+            Room existingRoom = roomRepository.findByRoomName(roomName);
+
+            if (existingRoom != null) {
+                // Update the room properties
+                existingRoom.setRows(rows);
+                existingRoom.setColumns(columns);
+
+                // Save the updated room
+                roomRepository.save(existingRoom);
+
+                return "Room Updated: " + existingRoom.getRoom_name();
+            } else {
+                return "Cannot find room with the given room name: " + roomName;
+            }
+        } else {
+            return "You are not signed in";
+        }
+    }
+    @ShellMethod(key = "delete room", value = "Delete a room")
+    public String deleteRoom(String roomName) {
+        if (adminLoggedIn) {
+            Room existingRoom = roomRepository.findByRoomName(roomName);
+
+            if (existingRoom != null) {
+                // Delete the room from the database
+                roomRepository.delete(existingRoom);
+
+                return "Room deleted: " + existingRoom.getRoom_name();
+            } else {
+                return "Cannot find room with the given room name: " + roomName;
+            }
+        } else {
+            return "You are not signed in";
+        }
+    }
+    @ShellMethod(key = "list rooms", value = "List rooms")
+    public String listRooms() {
+        List<Room> rooms = roomRepository.findAll();
+        List<String> result = new ArrayList<>();
+
+        if (rooms.isEmpty()) {
+            return "There are no rooms at the moment";
+        } else {
+            for (Room room : rooms) {
+                result.add(String.format("Room %s with %d seats, %d rows, and %d columns",
+                        room.getRoom_name(),
+                        room.getColumns()*room.getRows(),
+                        room.getRows(),
+                        room.getColumns()
+                ));
+            }
+            return result.toString();
+        }
+    }
+
 }
