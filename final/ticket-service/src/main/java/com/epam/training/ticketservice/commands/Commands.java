@@ -133,7 +133,7 @@ public class Commands {
                         .append(movie.getType())
                         .append(", ")
                         .append(movie.getDuration())
-                        .append(" minutes)\n");
+                        .append(" minutes)");
             }
             return output.toString();
         }
@@ -284,5 +284,28 @@ public class Commands {
             return "You are not signed in";
         }
     }
+    @ShellMethod(key = "list screenings", value = "List all screenings")
+    public String listScreenings() {
+        List<Screening> screenings = screeningRepository.findAll();
 
+        if (screenings.isEmpty()) {
+            return "There are no screenings";
+        }
+
+        StringBuilder result = new StringBuilder();
+        for (Screening screening : screenings) {
+            result.append(formatScreeningInfo(screening));
+        }
+
+        return result.toString();
+    }
+
+    private String formatScreeningInfo(Screening screening) {
+        return String.format("%s (%s, %d minutes), screened in room %s, at %s",
+                screening.getMovie_name(),
+                movieRepository.findByMovieName(screening.getMovie_name()).getType(),
+                movieRepository.findByMovieName(screening.getMovie_name()).getDuration(),
+                screening.getRoom_name(),
+                screening.getStartDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+    }
 }
