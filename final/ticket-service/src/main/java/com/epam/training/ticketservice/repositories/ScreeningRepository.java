@@ -16,6 +16,7 @@ public interface ScreeningRepository extends JpaRepository<Screening, Long> {
     @Query("SELECT COUNT(s.id) > 0 FROM Screening s WHERE s.room_name = :room_name AND (:startDateTime BETWEEN s.endDateTime AND s.endOfBreakPeriod)")
     boolean existsByRoomAndStartTimeAfter(String room_name, LocalDateTime startDateTime);
 
-//    boolean existsByRoomAndStartTimeAfter(String room_name, LocalDateTime startTime);
+    @Query("SELECT s FROM Screening s WHERE s.movie_name = :movie_name AND s.room_name = :room_name AND s.startDateTime = :startDateTime")
+    Screening findByMovieNameAndRoomNameAndStartTime(String movie_name, String room_name, LocalDateTime startDateTime);
 
 }

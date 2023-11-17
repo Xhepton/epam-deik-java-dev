@@ -259,4 +259,30 @@ public class Commands {
             return "You are not signed in";
         }
     }
+    @ShellMethod(key = "delete screening", value = "Delete a screening")
+    public String deleteScreening(String movieTitle, String roomName, String startDateTime) {
+        if (adminLoggedIn) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, formatter);
+
+                // Find the screening to delete
+                Screening screeningToDelete = screeningRepository.findByMovieNameAndRoomNameAndStartTime(
+                        movieTitle, roomName, screeningStartDateTime);
+
+                if (screeningToDelete != null) {
+                    // Delete the screening
+                    screeningRepository.delete(screeningToDelete);
+                    return "Screening deleted successfully";
+                } else {
+                    return "Screening not found";
+                }
+            } catch (Exception e) {
+                return "Error deleting screening";
+            }
+        } else {
+            return "You are not signed in";
+        }
+    }
+
 }
