@@ -16,15 +16,15 @@ public class Movie {
 
     private String type;
 
-    private int length;
+    private int duration;
 
     public Movie() {
     }
 
-    public Movie(String movie_name, String type, int length) {
+    public Movie(String movie_name, String type, int duration) {
         this.movie_name = movie_name;
         this.type = type;
-        this.length = length;
+        this.duration = duration;
     }
 
     public Long getId() {
@@ -51,11 +51,11 @@ public class Movie {
         this.type = type;
     }
 
-    public int getLength() {
-        return length;
+    public int getDuration() {
+        return duration;
     }
 
-    public void setLength(int length) {
-        this.length = length;
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }

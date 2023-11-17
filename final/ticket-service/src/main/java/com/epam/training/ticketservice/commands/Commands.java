@@ -2,13 +2,19 @@ package com.epam.training.ticketservice.commands;
 
 import com.epam.training.ticketservice.models.Movie;
 import com.epam.training.ticketservice.models.Room;
+import com.epam.training.ticketservice.models.Screening;
 import com.epam.training.ticketservice.repositories.MovieRepository;
 import com.epam.training.ticketservice.repositories.RoomRepository;
+import com.epam.training.ticketservice.repositories.ScreeningRepository;
 import com.epam.training.ticketservice.services.AdminService;
+import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,14 +23,16 @@ public class Commands {
 
     private final MovieRepository movieRepository;
     private final RoomRepository roomRepository;
+    private final ScreeningRepository screeningRepository;
     private final AdminService adminService;
     private boolean adminLoggedIn = false;
     private String loggedInUsername;
 
     @Autowired
-    public Commands(MovieRepository movieRepository, RoomRepository roomRepository, AdminService adminService) {
+    public Commands(MovieRepository movieRepository, RoomRepository roomRepository, ScreeningRepository screeningRepository, AdminService adminService) {
         this.movieRepository = movieRepository;
         this.roomRepository = roomRepository;
+        this.screeningRepository = screeningRepository;
         this.adminService = adminService;
     }
     @ShellMethod(key = "sign in privileged", value = "Admin login")
@@ -58,7 +66,7 @@ public class Commands {
             Movie movie = new Movie();
             movie.setMovie_name(movieName);
             movie.setType(type);
-            movie.setLength(length);
+            movie.setDuration(length);
 
             movieRepository.save(movie);
 
@@ -78,7 +86,7 @@ public class Commands {
             if (existingMovie != null) {
                 // Update the properties of the existing movie
                 existingMovie.setType(genre);
-                existingMovie.setLength(duration);
+                existingMovie.setDuration(duration);
 
                 // Save the updated movie back to the database
                 movieRepository.save(existingMovie);
@@ -124,7 +132,7 @@ public class Commands {
                         .append(" (")
                         .append(movie.getType())
                         .append(", ")
-                        .append(movie.getLength())
+                        .append(movie.getDuration())
                         .append(" minutes)\n");
             }
             return output.toString();
@@ -210,5 +218,45 @@ public class Commands {
             return result.toString();
         }
     }
+    @ShellMethod(key = "create screening", value = "Create a screening")
+    public String createScreening(String movieTitle, String roomName, String startDateTime) {
+        if (adminLoggedIn) {
+            Movie movie = movieRepository.findByMovieName(movieTitle);
+            Room room = roomRepository.findByRoomName(roomName);
 
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            //        LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"));
+            try {
+                // Parse the string using the formatter
+                LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, formatter);
+                Log.info("Parsed LocalDateTime: " + screeningStartDateTime);
+
+                // Check if there is an overlapping screening
+                LocalDateTime screeningEndTime = screeningStartDateTime.plusMinutes(movie.getDuration());
+                if (screeningRepository.existsByRoomAndStartTimeBetween(room.getRoom_name(), screeningStartDateTime, screeningEndTime)) {
+                    return "There is an overlapping screening";
+                }
+
+                // Check if the screening starts in the break period after another screening
+                if (screeningRepository.existsByRoomAndStartTimeAfter(room.getRoom_name(), screeningStartDateTime)) {
+                    return "This would start in the break period after another screening in this room";
+                }
+
+                // Create and save the screening (using the constructor
+                Screening screening = new Screening(movie.getMovie_name(), room.getRoom_name(), screeningStartDateTime, movie.getDuration());
+                //            screening.setMovie_name(movie.getMovie_name());
+                //            screening.setRoom_name(room.getRoom_name());
+                //            screening.setStartDateTime(screeningStartDateTime);
+                //            screening.setEndDateTime(screeningEndTime);
+                screeningRepository.save(screening);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            return "Screening created successfully";
+        } else {
+            return "You are not signed in";
+        }
+    }
 }
