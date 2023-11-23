@@ -14,7 +14,6 @@ public class Screening {
     @SuppressWarnings("unused")
     private Long id;
 
-    
     private String movieName;
 
     private String roomName;
