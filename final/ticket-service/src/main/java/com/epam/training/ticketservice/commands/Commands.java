@@ -7,15 +7,12 @@ import com.epam.training.ticketservice.repositories.MovieRepository;
 import com.epam.training.ticketservice.repositories.RoomRepository;
 import com.epam.training.ticketservice.repositories.ScreeningRepository;
 import com.epam.training.ticketservice.services.AdminService;
-import org.jline.utils.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @ShellComponent
@@ -29,12 +26,16 @@ public class Commands {
     private String loggedInUsername;
 
     @Autowired
-    public Commands(MovieRepository movieRepository, RoomRepository roomRepository, ScreeningRepository screeningRepository, AdminService adminService) {
+    public Commands(MovieRepository movieRepository,
+                    RoomRepository roomRepository,
+                    ScreeningRepository screeningRepository,
+                    AdminService adminService) {
         this.movieRepository = movieRepository;
         this.roomRepository = roomRepository;
         this.screeningRepository = screeningRepository;
         this.adminService = adminService;
     }
+
     @ShellMethod(key = "sign in privileged", value = "Admin login")
     public void signInPrivileged(String username, String password) {
         if (adminService.authenticate(username, password)) {
@@ -44,6 +45,7 @@ public class Commands {
             System.out.println("Login failed due to incorrect credentials");
         }
     }
+
     @ShellMethod(key = "sign out", value = "Admin logout")
     public void signOut() {
         adminLoggedIn = false;
@@ -61,16 +63,12 @@ public class Commands {
     @ShellMethod(key = "create movie", value = "Létrehoz egy filmet és menti az adatbázisba")
     public void createMovie(String movieName, String type, int length) {
         if (adminLoggedIn) {
-            Movie movie = new Movie();
-            movie.setMovie_name(movieName);
-            movie.setType(type);
-            movie.setDuration(length);
+            Movie movie = new Movie(movieName, type, length);
 
             movieRepository.save(movie);
 
-            System.out.println("Film mentve az adatbázisba: " + movie.getMovie_name());
-        }
-        else {
+            System.out.println("Film mentve az adatbázisba: " + movie.getMovieName());
+        } else {
             System.out.println("You are not signed in");
         }
     }
@@ -126,7 +124,7 @@ public class Commands {
         } else {
             StringBuilder output = new StringBuilder();
             for (Movie movie : movies) {
-                output.append(movie.getMovie_name())
+                output.append(movie.getMovieName())
                         .append(" (")
                         .append(movie.getType())
                         .append(", ")
@@ -143,13 +141,9 @@ public class Commands {
             // Check if a room with the same name already exists
             if (roomRepository.existsByRoomName(roomName)) {
                 System.out.println("Room with name '" + roomName + "' already exists.");
-            }
-            else {
+            } else {
                 // Create a new room
-                Room newRoom = new Room();
-                newRoom.setRoom_name(roomName);
-                newRoom.setRows(rows);
-                newRoom.setColumns(columns);
+                Room newRoom = new Room(roomName, rows, columns);
 
                 // Save the new room to the database
                 roomRepository.save(newRoom);
@@ -159,6 +153,7 @@ public class Commands {
             System.out.println("You must be logged in as admin to execute this command.");
         }
     }
+
     @ShellMethod(key = "update room", value = "Update a room")
     public void updateRoom(String roomName, int rows, int columns) {
         if (adminLoggedIn) {
@@ -178,6 +173,7 @@ public class Commands {
             System.out.println("You are not signed in");
         }
     }
+
     @ShellMethod(key = "delete room", value = "Delete a room")
     public void deleteRoom(String roomName) {
         if (adminLoggedIn) {
@@ -194,25 +190,27 @@ public class Commands {
             System.out.println("You are not signed in");
         }
     }
+
     @ShellMethod(key = "list rooms", value = "List rooms")
     public String listRooms() {
         List<Room> rooms = roomRepository.findAll();
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         if (rooms.isEmpty()) {
             return "There are no rooms at the moment";
         } else {
             for (Room room : rooms) {
-                result = result + (String.format("Room %s with %d seats, %d rows and %d columns",
-                        room.getRoom_name(),
-                        room.getColumns()*room.getRows(),
+                result.append(String.format("Room %s with %d seats, %d rows and %d columns",
+                        room.getRoomName(),
+                        room.getColumns() * room.getRows(),
                         room.getRows(),
                         room.getColumns()
                 ));
             }
-            return result;
+            return result.toString();
         }
     }
+
     @ShellMethod(key = "create screening", value = "Create a screening")
     public void createScreening(String movieTitle, String roomName, String startDateTime) {
         if (adminLoggedIn) {
@@ -220,39 +218,29 @@ public class Commands {
             Room room = roomRepository.findByRoomName(roomName);
 
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-            //        LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm"));
-            try {
-                // Parse the string using the formatter
-                LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, formatter);
+            // Parse the string using the formatter
+            LocalDateTime screeningStartDateTime = LocalDateTime.parse(startDateTime, formatter);
 
-                // Check if there is an overlapping screening
-                LocalDateTime screeningEndTime = screeningStartDateTime.plusMinutes(movie.getDuration());
-                if (screeningRepository.existsByRoomAndStartTimeBetween(room.getRoom_name(), screeningStartDateTime, screeningEndTime)) {
-                    System.out.println("There is an overlapping screening");
-                }
-
-                // Check if the screening starts in the break period after another screening
-                else if (screeningRepository.existsByRoomAndStartTimeAfter(room.getRoom_name(), screeningStartDateTime)) {
-                    System.out.println("This would start in the break period after another screening in this room");
-                }
-                else {
-                    Screening screening = new Screening(movie.getMovie_name(), room.getRoom_name(), screeningStartDateTime, movie.getDuration());
-                    screeningRepository.save(screening);
-                }
-
-                // Create and save the screening (using the constructor
-                //            screening.setMovie_name(movie.getMovie_name());
-                //            screening.setRoom_name(room.getRoom_name());
-                //            screening.setStartDateTime(screeningStartDateTime);
-                //            screening.setEndDateTime(screeningEndTime);
-
-            } catch (Exception e) {
-                e.printStackTrace();
+            // Check if there is an overlapping screening
+            LocalDateTime screeningEndTime = screeningStartDateTime.plusMinutes(movie.getDuration());
+            if (screeningRepository.existsByRoomAndStartTimeBetween(room.getRoomName(),
+                                                                    screeningStartDateTime,
+                                                                    screeningEndTime)) {
+                System.out.println("There is an overlapping screening");
+            } else if (screeningRepository.existsByRoomAndStartTimeAfter(room.getRoomName(), screeningStartDateTime)) {
+                System.out.println("This would start in the break period after another screening in this room");
+            } else {
+                Screening screening = new Screening(movie.getMovieName(),
+                                                    room.getRoomName(),
+                                                    screeningStartDateTime,
+                                                    movie.getDuration());
+                screeningRepository.save(screening);
             }
         } else {
             System.out.println("You are not signed in");
         }
     }
+
     @ShellMethod(key = "delete screening", value = "Delete a screening")
     public String deleteScreening(String movieTitle, String roomName, String startDateTime) {
         if (adminLoggedIn) {
@@ -278,6 +266,7 @@ public class Commands {
             return "You are not signed in";
         }
     }
+
     @ShellMethod(key = "list screenings", value = "List all screenings")
     public String listScreenings() {
         List<Screening> screenings = screeningRepository.findAll();
@@ -288,7 +277,7 @@ public class Commands {
 
         StringBuilder result = new StringBuilder();
         for (Screening screening : screenings) {
-            result.append(formatScreeningInfo(screening) + "\n");
+            result.append(formatScreeningInfo(screening)).append("\n");
         }
 
         return result.toString();
@@ -296,10 +285,10 @@ public class Commands {
 
     private String formatScreeningInfo(Screening screening) {
         return String.format("%s (%s, %d minutes), screened in room %s, at %s",
-                screening.getMovie_name(),
-                movieRepository.findByMovieName(screening.getMovie_name()).getType(),
-                movieRepository.findByMovieName(screening.getMovie_name()).getDuration(),
-                screening.getRoom_name(),
+                screening.getMovieName(),
+                movieRepository.findByMovieName(screening.getMovieName()).getType(),
+                movieRepository.findByMovieName(screening.getMovieName()).getDuration(),
+                screening.getRoomName(),
                 screening.getStartDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
     }
 }
