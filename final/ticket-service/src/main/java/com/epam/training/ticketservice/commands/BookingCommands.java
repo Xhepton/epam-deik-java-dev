@@ -29,7 +29,7 @@ public class BookingCommands {
 
             List<String> bookedSeats = Arrays.asList(seats.split(" "));
 
-            String seatsToPrint = "";
+            StringBuilder seatsToPrint = new StringBuilder();
 
             for (String seatToken : bookedSeats) {
                 String[] seatInfo = seatToken.split(",");
@@ -37,22 +37,27 @@ public class BookingCommands {
                 int row = Integer.parseInt(seatInfo[0]);
                 int column = Integer.parseInt(seatInfo[1]);
 
-                if (bookingRepository.existsByRowAndColumn(row, column)) {
+                if (bookingRepository.existsByRowNumberAndColumnNumber(row, column)) {
                     return String.format("Seat (%d,%d) is already taken", row, column);
                 } else {
-                    Booking booking = new Booking(movieName, roomName, startDateTime, row, column, UserCommands.getLoggedInUsername());
+                    Booking booking = new Booking(movieName,
+                                                    roomName,
+                                                    startDateTime,
+                                                    row,
+                                                    column,
+                                                    UserCommands.getLoggedInUsername());
                     bookingRepository.save(booking);
 
                     if (seatToken.equals(bookedSeats.get(bookedSeats.size() - 1))) {
-                        seatsToPrint = seatsToPrint + String.format("(%d,%d);", row, column);
+                        seatsToPrint.append(String.format("(%d,%d);", row, column));
                     } else {
-                        seatsToPrint = seatsToPrint + String.format("(%d,%d), ", row, column);
+                        seatsToPrint.append(String.format("(%d,%d), ", row, column));
                     }
                 }
             }
-            return String.format("Seats booked: %s the price for this booking is %d HUF", seatsToPrint, bookedSeats.size() * 1500);
-        }
-        else {
+            return String.format("Seats booked: %s the price for this booking is %d HUF",
+                                    seatsToPrint, bookedSeats.size() * 1500);
+        } else {
             return "";
         }
     }

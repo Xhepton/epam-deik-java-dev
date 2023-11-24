@@ -1,9 +1,9 @@
 package com.epam.training.ticketservice.repositories;
 
-import com.epam.training.ticketservice.models.User;
+import com.epam.training.ticketservice.models.Account;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<Account, Long> {
 
-    User findUserByUsername(String username);
+    Account findUserByUsername(String username);
 }

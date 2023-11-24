@@ -1,7 +1,6 @@
 package com.epam.training.ticketservice.repositories;
 
 import com.epam.training.ticketservice.models.Booking;
-import com.epam.training.ticketservice.models.Movie;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -10,5 +9,5 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findAllByUsername(String username);
 
-    boolean existsByRowAndColumn(int row, int column);
+    boolean existsByRowNumberAndColumnNumber(int row, int column);
 }
