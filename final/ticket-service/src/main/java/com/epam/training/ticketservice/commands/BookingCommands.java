@@ -58,7 +58,7 @@ public class BookingCommands {
             return String.format("Seats booked: %s the price for this booking is %d HUF",
                                     seatsToPrint, bookedSeats.size() * 1500);
         } else {
-            return "";
+            return "You are not signed in";
         }
     }
 }
