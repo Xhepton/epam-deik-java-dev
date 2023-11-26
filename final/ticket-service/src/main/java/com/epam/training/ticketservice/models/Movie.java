@@ -26,6 +26,10 @@ public class Movie {
         return movieName;
     }
 
+    public void setMovieName(String movieName) {
+        this.movieName = movieName;
+    }
+
     public String getType() {
         return type;
     }

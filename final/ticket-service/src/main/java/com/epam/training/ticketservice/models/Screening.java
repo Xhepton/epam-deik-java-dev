@@ -41,11 +41,39 @@ public class Screening {
         return movieName;
     }
 
+    public void setMovieName(String movieName) {
+        this.movieName = movieName;
+    }
+
     public String getRoomName() {
         return roomName;
     }
 
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
     public LocalDateTime getStartDateTime() {
         return startDateTime;
+    }
+
+    public void setStartDateTime(LocalDateTime startDateTime) {
+        this.startDateTime = startDateTime;
+    }
+
+    public LocalDateTime getEndDateTime() {
+        return endDateTime;
+    }
+
+    public void setEndDateTime(LocalDateTime endDateTime) {
+        this.endDateTime = endDateTime;
+    }
+
+    public LocalDateTime getEndOfBreakPeriod() {
+        return endOfBreakPeriod;
+    }
+
+    public void setEndOfBreakPeriod(LocalDateTime endOfBreakPeriod) {
+        this.endOfBreakPeriod = endOfBreakPeriod;
     }
 }

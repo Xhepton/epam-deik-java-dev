@@ -40,15 +40,51 @@ public class Booking {
         this.username = username;
     }
 
+    public String getMovieName() {
+        return movieName;
+    }
+
+    public void setMovieName(String movieName) {
+        this.movieName = movieName;
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
     public LocalDateTime getStartDateTime() {
         return startDateTime;
+    }
+
+    public void setStartDateTime(LocalDateTime startDateTime) {
+        this.startDateTime = startDateTime;
     }
 
     public int getRowNumber() {
         return rowNumber;
     }
 
+    public void setRowNumber(int rowNumber) {
+        this.rowNumber = rowNumber;
+    }
+
     public int getColumnNumber() {
         return columnNumber;
+    }
+
+    public void setColumnNumber(int columnNumber) {
+        this.columnNumber = columnNumber;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

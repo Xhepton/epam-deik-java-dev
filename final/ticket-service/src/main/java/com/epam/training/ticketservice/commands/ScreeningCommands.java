@@ -4,7 +4,6 @@ import com.epam.training.ticketservice.models.Movie;
 import com.epam.training.ticketservice.models.Room;
 import com.epam.training.ticketservice.models.Screening;
 import com.epam.training.ticketservice.repositories.ScreeningRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
@@ -17,7 +16,6 @@ public class ScreeningCommands {
 
     private final ScreeningRepository screeningRepository;
 
-    @Autowired
     public ScreeningCommands(ScreeningRepository screeningRepository) {
         this.screeningRepository = screeningRepository;
     }
@@ -94,7 +92,7 @@ public class ScreeningCommands {
         return result.toString();
     }
 
-    private String formatScreeningInfo(Screening screening) {
+    public String formatScreeningInfo(Screening screening) {
         return String.format("%s (%s, %d minutes), screened in room %s, at %s",
                 screening.getMovieName(),
                 MovieCommands.getMovieRepository().findByMovieName(screening.getMovieName()).getType(),

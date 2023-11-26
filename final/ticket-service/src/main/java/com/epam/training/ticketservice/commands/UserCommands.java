@@ -17,7 +17,7 @@ public class UserCommands {
 
     private static String loggedInUsername;
     private final AdminService adminService;
-    private static boolean adminLoggedIn = false;
+    public static boolean adminLoggedIn = false;
     private static UserRepository userRepository;
     private BookingRepository bookingRepository;
 
@@ -49,12 +49,13 @@ public class UserCommands {
     }
 
     @ShellMethod(key = "sign in privileged", value = "Admin login")
-    public void signInPrivileged(String username, String password) {
+    public String signInPrivileged(String username, String password) {
         if (adminService.authenticate(username, password)) {
             adminLoggedIn = true;
             loggedInUsername = username;
+            return "Logged in as admin";
         } else {
-            System.out.println("Login failed due to incorrect credentials");
+            return "Login failed due to incorrect credentials";
         }
     }
 
@@ -90,16 +91,7 @@ public class UserCommands {
                 return "Signed in with account '" + loggedInUsername + "'" + "\n"
                         + "You have not booked any tickets yet";
             } else {
-                StringBuilder seatsToPrint = new StringBuilder();
-                for (Booking booking : bookings) {
-                    if (booking.equals(bookings.get(bookings.size() - 1))) {
-                        seatsToPrint.append(String.format("(%d,%d)",
-                                booking.getRowNumber(), booking.getColumnNumber()));
-                    } else {
-                        seatsToPrint.append(String.format("(%d,%d), ",
-                                booking.getRowNumber(), booking.getColumnNumber()));
-                    }
-                }
+                StringBuilder seatsToPrint = getStringBuilder(bookings);
                 return "Signed in with account '" + loggedInUsername + "'" + "\n"
                         + "Your previous bookings are" + "\n"
                         + String.format("Seats %s on Sátántangó in room Pedersoli starting at %s for %d HUF",
@@ -111,5 +103,19 @@ public class UserCommands {
         } else {
             return "You are not signed in";
         }
+    }
+
+    private static StringBuilder getStringBuilder(List<Booking> bookings) {
+        StringBuilder seatsToPrint = new StringBuilder();
+        for (Booking booking : bookings) {
+            if (booking.equals(bookings.get(bookings.size() - 1))) {
+                seatsToPrint.append(String.format("(%d,%d)",
+                        booking.getRowNumber(), booking.getColumnNumber()));
+            } else {
+                seatsToPrint.append(String.format("(%d,%d), ",
+                        booking.getRowNumber(), booking.getColumnNumber()));
+            }
+        }
+        return seatsToPrint;
     }
 }

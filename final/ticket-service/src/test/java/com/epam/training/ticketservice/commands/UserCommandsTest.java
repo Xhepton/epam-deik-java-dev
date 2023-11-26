@@ -141,7 +141,8 @@ class UserCommandsTest {
 
         String result = userCommands.describeAccount();
 
-        assertEquals("Signed in with account 'testUser'\nYou have not booked any tickets yet", result);
+        assertEquals("Signed in with account 'testUser'\nYou have not booked any tickets yet",
+                result);
     }
 
     @Test
@@ -151,8 +152,10 @@ class UserCommandsTest {
         UserCommands.setLoggedInUsername("testUser");
 
         List<Booking> bookings = new ArrayList<>();
-        bookings.add(new Booking("Sátántangó", "Pedersoli", LocalDateTime.now(), 1, 1, "testUser"));
-        bookings.add(new Booking("Sátántangó", "Pedersoli", LocalDateTime.now(), 2, 2, "testUser"));
+        bookings.add(new Booking("Sátántangó", "Pedersoli",
+                LocalDateTime.now(), 1, 1, "testUser"));
+        bookings.add(new Booking("Sátántangó", "Pedersoli",
+                LocalDateTime.now(), 2, 2, "testUser"));
 
         when(bookingRepositoryMock.findAllByUsername("testUser")).thenReturn(bookings);
 

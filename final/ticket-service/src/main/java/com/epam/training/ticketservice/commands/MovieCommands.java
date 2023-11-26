@@ -8,6 +8,8 @@ import org.springframework.shell.standard.ShellMethod;
 
 import java.util.List;
 
+import static com.epam.training.ticketservice.commands.UserCommands.adminLoggedIn;
+
 @ShellComponent
 public class MovieCommands {
 
@@ -23,21 +25,21 @@ public class MovieCommands {
     }
 
     @ShellMethod(key = "create movie", value = "Létrehoz egy filmet és menti az adatbázisba")
-    public void createMovie(String movieName, String type, int length) {
-        if (UserCommands.isAdminLoggedIn()) {
+    public String createMovie(String movieName, String type, int length) {
+        if (adminLoggedIn) {
             Movie movie = new Movie(movieName, type, length);
 
             movieRepository.save(movie);
 
-            System.out.println("Film mentve az adatbázisba: " + movie.getMovieName());
+            return "Film mentve az adatbázisba: " + movie.getMovieName();
         } else {
-            System.out.println("You are not signed in");
+            return "You are not signed in";
         }
     }
 
     @ShellMethod(key = "update movie", value = "Update movie details")
     public String updateMovie(String movieTitle, String genre, int duration) {
-        if (UserCommands.isAdminLoggedIn()) {
+        if (adminLoggedIn) {
             // Retrieve the existing movie from the database
             Movie existingMovie = movieRepository.findByMovieName(movieTitle);
 

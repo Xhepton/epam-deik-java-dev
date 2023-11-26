@@ -26,6 +26,10 @@ public class Room {
         return roomName;
     }
 
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
     public int getRows() {
         return rows;
     }
