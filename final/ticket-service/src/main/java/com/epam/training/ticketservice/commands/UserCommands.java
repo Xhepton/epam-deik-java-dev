@@ -19,7 +19,6 @@ public class UserCommands {
     private final AdminService adminService;
     private static boolean adminLoggedIn = false;
     private static UserRepository userRepository;
-
     private BookingRepository bookingRepository;
 
     @Autowired
@@ -37,8 +36,16 @@ public class UserCommands {
         return adminLoggedIn;
     }
 
+    public static void setAdminLoggedIn(boolean adminLoggedIn) {
+        UserCommands.adminLoggedIn = adminLoggedIn;
+    }
+
     public static String getLoggedInUsername() {
         return loggedInUsername;
+    }
+
+    public static void setLoggedInUsername(String loggedInUsername) {
+        UserCommands.loggedInUsername = loggedInUsername;
     }
 
     @ShellMethod(key = "sign in privileged", value = "Admin login")
@@ -60,7 +67,6 @@ public class UserCommands {
     @ShellMethod(key = "sign in", value = "User sign in")
     public void signIn(String username, String password) {
         Account account = userRepository.findUserByUsername(username);
-
         if (account != null && account.getPassword().equals(password)) {
             loggedInUsername = username;
         } else {
@@ -84,7 +90,6 @@ public class UserCommands {
                 return "Signed in with account '" + loggedInUsername + "'" + "\n"
                         + "You have not booked any tickets yet";
             } else {
-
                 StringBuilder seatsToPrint = new StringBuilder();
                 for (Booking booking : bookings) {
                     if (booking.equals(bookings.get(bookings.size() - 1))) {
@@ -95,7 +100,6 @@ public class UserCommands {
                                 booking.getRowNumber(), booking.getColumnNumber()));
                     }
                 }
-
                 return "Signed in with account '" + loggedInUsername + "'" + "\n"
                         + "Your previous bookings are" + "\n"
                         + String.format("Seats %s on Sátántangó in room Pedersoli starting at %s for %d HUF",

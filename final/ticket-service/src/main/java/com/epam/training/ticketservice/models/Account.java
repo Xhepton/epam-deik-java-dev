@@ -28,4 +28,7 @@ public class Account {
         return password;
     }
 
+    public String getUsername() {
+        return username;
+    }
 }
